@@ -45,6 +45,37 @@ disjoint_set * FindParent(disjoint_set *node)
 return retval;
 
 }
+int removeDuplicate(arraynode a[],int n)
+{
+
+	int i,j;
+	i=1,j=0;
+	while(i<n&&(a[i].data!=a[i-1].data))
+	{
+		i=i+1;
+	}
+	if(i==n)
+	{
+		j=n-1;
+	}
+	else
+	{
+		j=i-1;
+		while(i<n-1)
+		{
+			i=i+1;
+			if(a[i-1].data!=a[i].data)
+			{
+				j=j+1;
+				a[j].data=a[i].data;
+				a[j].node=a[i].node;
+				//a[j]=a[i];
+			}
+		}
+	}
+	return (j+1);
+}
+
 		
 disjoint_set * BinSearch(arraynode array[], int n , int x)
 {
@@ -172,12 +203,11 @@ void Sort(arraynode array[],int n)
 void display(arraynode result[],int size)
 {
 	int i;
-	arraynode temp;
 	for(i=0;i<size;i++)
 	{
-		temp=result[i];
-		printf("%d ",temp.data);
+		printf("%d ",result[i].data);
 	}
+	printf("\n");
 }
 	
 void listunion(arraynode array[],int n,arraynode array1[],int m)
@@ -315,8 +345,8 @@ int main()
 
 	statuscode sc;
 	disjoint_set *ptr,*node,*ptr1,*ptr2;
-	arraynode *array,*array1;	
-	int n,option,option1,m,i,val1,val2,data;
+	arraynode *array,*array1,*narray,*narray1;	
+	int n,option,option1,m,i,val1,val2,data,len,len1;
 	printf("enter the number of elements to be read\n");
 	scanf("%d",&n);
 	array=(arraynode *)malloc(sizeof(arraynode)*n);
@@ -328,12 +358,14 @@ int main()
 	    array[i].data=data;
 	}
 	Sort(array,n);
-	for(i=0;i<n;i++)
-				{
-					printf("%d ",array[i].data);
-				}
+	 len=removeDuplicate( array, n);
+	narray=(arraynode*)realloc(array,sizeof(arraynode)*len);
+	 printf("%d \n",len); 
+	//free(array);
 	
-	
+	display(narray,len);
+	 
+	//free(array);
 	option = 0;
 	while(option != -1)
 	{
@@ -351,8 +383,15 @@ int main()
     	            break;
     	   case 2:	printf("Enter a number\n");
     	            scanf("%d",&val1);
-    	            node = BinSearch(array,n,val1);
-    	            ptr=FindParent(node);
+    	            node = BinSearch(narray,len,val1);
+					 ptr=FindParent(node);
+					 // Path Compression implemented
+			        if(node != NULL && ptr !=NULL && node != ptr && node->parent != ptr)
+				    {
+					    node->parent = ptr;
+				    }
+					
+    	           
 					if(ptr!=NULL)
     	            printf("%d\n",ptr->data);
 					else
@@ -360,10 +399,22 @@ int main()
     	            break;
     	   case 3:printf("Enter 2 numbers\n");
     	          scanf("%d %d",&val1,&val2);
-    	          node = BinSearch(array,n,val1);
+    	          node = BinSearch(narray,len,val1);
     	          ptr1 = FindParent(node);
-    	          node = BinSearch(array,n,val2);
+				
+				  // Path Compression implemented
+			      if(node != NULL && ptr1 !=NULL && node != ptr1 && node->parent != ptr1)
+				  {
+						node->parent = ptr1;
+				  }
+    	          node = BinSearch(narray,len,val2);
     	          ptr2 = FindParent(node);
+
+				  // Path Compression implemented
+			      if(node != NULL && ptr2 != NULL && node != ptr2 && node->parent != ptr2)
+				  {
+						node->parent = ptr2;
+				  }
 				  if(ptr1!=NULL && ptr2!=NULL)
 					{
     	           		if(ptr1->data == ptr2->data)
@@ -385,10 +436,12 @@ int main()
 	    			array1[i].data=data;
 				}
 				Sort(array1,m);
-				for(i=0;i<m;i++)
-				{
-					printf("%d",array1[i].data);
-				}
+				len1=removeDuplicate( array1, m);
+				narray1=(arraynode *)realloc(array1,sizeof(arraynode)*len1);
+	 			printf("%d \n",len1);
+			
+				display(array1,len1);
+				//free(array1);
 				option1 = 0;
 				while(option1 !=-1)
 				{
@@ -396,13 +449,13 @@ int main()
 					scanf("%d",&option1);
 					switch(option1)
 					{
-						case 1: listunion(array,n,array1,m);
+						case 1: listunion(narray,len,narray1,len1);
 						break;
-						case 2: listintersection(array,n,array1,m);
+						case 2: listintersection(narray,len,narray1,len1);
 						break;
-						case 3: listdifference(array,n,array1,m);
+						case 3: listdifference(narray,len,narray1,len1);
 						break;
-						case 4: listsymdiff(array,n,array1,m);
+						case 4: listsymdiff(narray,len,narray1,len1);
 						break;
 						default:option1=-1;
 					}
@@ -413,3 +466,4 @@ int main()
 	}
 
 }
+
